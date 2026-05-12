@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Enroll / Login — ቋንቋ to Career</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0a0f;
+    --bg-2:#13131c;
+    --ink:#fffaf0;
+    --rust:#ff5733;
+    --rust-bright:#ff7849;
+    --gold:#ffb627;
+    --cyan:#06d6a0;
+    --muted:#8a8694;
+    --line:rgba(255,250,240,.08);
+    --success:#06d6a0;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;cursor:none;overflow-x:hidden;}
+  
+  .cursor{position:fixed;width:12px;height:12px;background:var(--rust);border-radius:50%;pointer-events:none;z-index:9999;transition:width .25s,height .25s;mix-blend-mode:difference;transform:translate(-50%,-50%);}
+  .cursor.big{width:40px;height:40px;}
+  .cursor-ring{position:fixed;width:36px;height:36px;border:1px solid var(--gold);border-radius:50%;pointer-events:none;z-index:9998;transition:transform .3s cubic-bezier(.16,1,.3,1);transform:translate(-50%,-50%);}
+  
+  #bg-canvas{position:fixed;inset:0;z-index:0;opacity:.6;}
+  .noise{position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.04;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  
+  /* LEFT VISUAL */
+  .visual{
+    flex:1;
+    padding:60px;
+    display:flex;flex-direction:column;justify-content:space-between;
+    position:relative;
+    overflow:hidden;
+    z-index:5;
+    background:linear-gradient(145deg,rgba(255,87,51,.08) 0%,transparent 60%);
+    border-right:1px solid var(--line);
+  }
+  .visual::before{
+    content:"ቋንቋ";
+    position:absolute;
+    font-family:'Fraunces',serif;
+    font-weight:900;
+    font-size:480px;
+    color:transparent;
+    -webkit-text-stroke:1px rgba(255,87,51,.15);
+    top:50%;left:50%;
+    transform:translate(-50%,-50%);
+    line-height:1;
+    pointer-events:none;
+    animation:slowSpin 80s linear infinite;
+  }
+  @keyframes slowSpin{from{transform:translate(-50%,-50%) rotate(0);}to{transform:translate(-50%,-50%) rotate(360deg);}}
+  
+  .v-top{position:relative;z-index:2;}
+  .v-logo{
+    font-family:'Fraunces',serif;
+    font-size:24px;font-weight:700;
+    background:linear-gradient(135deg,var(--ink) 0%,var(--gold) 100%);
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;
+    display:inline-block;
+  }
+  .v-logo span{color:var(--rust);font-style:italic;-webkit-text-fill-color:var(--rust);}
+  .v-mid{position:relative;z-index:2;}
+  .v-eyebrow{
+    display:inline-flex;align-items:center;gap:10px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--gold);
+    padding:8px 16px;
+    border:1px solid rgba(255,182,39,.3);
+    border-radius:100px;
+    background:rgba(255,182,39,.05);
+    margin-bottom:24px;
+  }
+  .v-eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);}
+  .v-title{
+    font-family:'Fraunces',serif;
+    font-weight:400;
+    font-size:72px;line-height:.95;letter-spacing:-.035em;
+    margin-bottom:24px;
+  }
+  .v-title em{
+    font-style:italic;
+    background:linear-gradient(135deg,var(--rust) 0%,var(--gold) 100%);
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;
+  }
+  .v-sub{color:var(--muted);font-size:17px;max-width:420px;line-height:1.6;}
+  .v-bot{position:relative;z-index:2;display:flex;gap:40px;}
+  .v-stat .num{
+    font-family:'Fraunces',serif;
+    font-size:48px;line-height:1;margin-bottom:4px;
+    background:linear-gradient(135deg,var(--rust),var(--gold));
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;
+  }
+  .v-stat .lbl{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:.15em;text-transform:uppercase;
+    color:var(--muted);
+  }
+  
+  /* RIGHT FORM */
+  .form-side{
+    flex:1;
+    padding:60px;
+    display:flex;flex-direction:column;
+    overflow-y:auto;
+    max-height:100vh;
+    position:relative;z-index:5;
+  }
+  .back{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--muted);text-decoration:none;
+    margin-bottom:40px;
+    display:inline-flex;align-items:center;gap:8px;
+    align-self:flex-start;
+    transition:color .2s;
+  }
+  .back:hover{color:var(--rust);}
+  
+  .tabs{
+    display:flex;
+    background:rgba(255,255,255,.04);
+    backdrop-filter:blur(10px);
+    border:1px solid var(--line);
+    border-radius:100px;
+    padding:5px;
+    margin-bottom:40px;
+    width:fit-content;
+  }
+  .tab{
+    padding:11px 24px;
+    background:transparent;
+    cursor:none;
+    font-size:12px;font-weight:600;
+    letter-spacing:.06em;text-transform:uppercase;
+    border:none;border-radius:100px;
+    color:var(--muted);
+    transition:all .3s;
+    font-family:'Inter',sans-serif;
+  }
+  .tab.active{
+    background:linear-gradient(135deg,var(--rust) 0%,var(--rust-bright) 100%);
+    color:var(--ink);
+    box-shadow:0 4px 20px rgba(255,87,51,.35);
+  }
+  
+  .form-block{display:none;}
+  .form-block.active{display:block;animation:fade .5s cubic-bezier(.16,1,.3,1);}
+  @keyframes fade{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+  
+  h1.form-title{
+    font-family:'Fraunces',serif;
+    font-weight:400;
+    font-size:52px;
+    line-height:1;letter-spacing:-.03em;
+    margin-bottom:16px;
+  }
+  h1.form-title em{
+    font-style:italic;
+    background:linear-gradient(135deg,var(--rust),var(--gold));
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;
+  }
+  .form-sub{color:var(--muted);font-size:15px;margin-bottom:40px;max-width:440px;}
+  
+  .field{margin-bottom:22px;}
+  .field label{
+    display:block;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--gold);
+    margin-bottom:10px;
+  }
+  .field input, .field select{
+    width:100%;
+    padding:15px 18px;
+    background:rgba(255,255,255,.03);
+    border:1px solid var(--line);
+    border-radius:12px;
+    color:var(--ink);
+    font-size:15px;
+    font-family:'Inter',sans-serif;
+    transition:all .25s;
+    cursor:none;
+  }
+  .field input::placeholder{color:var(--muted);}
+  .field input:focus, .field select:focus{
+    outline:none;
+    border-color:var(--rust);
+    background:rgba(255,87,51,.06);
+    box-shadow:0 0 0 4px rgba(255,87,51,.08);
+  }
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  
+  .submit-btn{
+    width:100%;
+    background:linear-gradient(135deg,var(--rust) 0%,var(--rust-bright) 100%);
+    color:var(--ink);
+    border:none;
+    padding:18px;
+    border-radius:100px;
+    font-size:13px;font-weight:600;
+    letter-spacing:.08em;text-transform:uppercase;
+    cursor:none;
+    transition:all .35s cubic-bezier(.16,1,.3,1);
+    font-family:'Inter',sans-serif;
+    margin-top:10px;
+    box-shadow:0 10px 40px rgba(255,87,51,.35);
+  }
+  .submit-btn:hover{transform:translateY(-2px);box-shadow:0 16px 50px rgba(255,87,51,.5);}
+  
+  .pay-info{
+    margin-top:36px;
+    background:linear-gradient(145deg,rgba(255,255,255,.04) 0%,rgba(255,255,255,.01) 100%);
+    backdrop-filter:blur(10px);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:24px;
+    position:relative;
+    overflow:hidden;
+  }
+  .pay-info::before{
+    content:"";position:absolute;top:0;left:0;right:0;
+    height:3px;background:linear-gradient(90deg,var(--rust),var(--gold));
+  }
+  .pay-info h4{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--gold);margin-bottom:12px;
+  }
+  .pay-info p{font-size:14px;color:var(--ink);margin-bottom:8px;line-height:1.5;}
+  .pay-info .accounts{
+    margin-top:14px;padding-top:14px;
+    border-top:1px dashed var(--line);
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;color:var(--muted);
+  }
+  .pay-info .accounts div{padding:5px 0;}
+  .pay-info .accounts strong{color:var(--gold);}
+  
+  .alt-row{margin-top:32px;text-align:center;font-size:14px;color:var(--muted);}
+  .alt-row a{color:var(--rust-bright);text-decoration:none;font-weight:600;cursor:none;}
+  .alt-row a:hover{text-decoration:underline;}
+  
+  .toast{
+    position:fixed;top:24px;right:24px;
+    background:linear-gradient(135deg,var(--success) 0%,#04b389 100%);
+    color:var(--bg);
+    padding:14px 22px;
+    font-size:14px;font-weight:600;
+    border-radius:12px;
+    box-shadow:0 10px 40px rgba(6,214,160,.4);
+    z-index:1000;
+    transform:translateX(120%);
+    transition:transform .4s cubic-bezier(.16,1,.3,1);
+  }
+  .toast.show{transform:translateX(0);}
+  
+  @media(max-width:900px){
+    body{flex-direction:column;cursor:auto;}
+    .cursor,.cursor-ring{display:none;}
+    .visual{padding:40px 24px;min-height:260px;border-right:none;border-bottom:1px solid var(--line);}
+    .visual::before{font-size:280px;}
+    .v-title{font-size:42px;}
+    .v-bot{gap:24px;}
+    .form-side{padding:40px 24px;max-height:none;}
+    .field-row{grid-template-columns:1fr;}
+    h1.form-title{font-size:36px;}
+  }
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="noise"></div>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+
+<!-- LEFT -->
+<div class="visual">
+  <div class="v-top">
+    <div class="v-logo">AY Labs<span>.</span></div>
+  </div>
+  <div class="v-mid">
+    <div class="v-eyebrow">ቋንቋ to Career · Beginner English</div>
+    <h2 class="v-title">Your seat,<br><em>your future.</em></h2>
+    <p class="v-sub">Enroll once. Get 3 months of full access to 36 video lessons, 6 modules, and the confidence to speak English at work, on the phone, anywhere.</p>
+  </div>
+  <div class="v-bot">
+    <div class="v-stat"><div class="num">36</div><div class="lbl">Lessons</div></div>
+    <div class="v-stat"><div class="num">6</div><div class="lbl">Modules</div></div>
+    <div class="v-stat"><div class="num">90d</div><div class="lbl">Access</div></div>
+  </div>
+</div>
+
+<!-- RIGHT -->
+<div class="form-side">
+  <a href="index.html" class="back">← Back to home</a>
+  
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('enroll')">Enroll</button>
+    <button class="tab" onclick="switchTab('login')">Student Login</button>
+  </div>
+
+  <div class="form-block active" id="enroll-block">
+    <h1 class="form-title">Enroll in <em>ቋንቋ to Career</em></h1>
+    <p class="form-sub">Fill in your details, send your payment, and we'll unlock your account within 24 hours.</p>
+    
+    <div class="field-row">
+      <div class="field"><label>Full Name</label><input type="text" placeholder="Yohannes Tadesse" id="r-name"></div>
+      <div class="field"><label>Phone Number</label><input type="tel" placeholder="09XX XXX XXX" id="r-phone"></div>
+    </div>
+    <div class="field"><label>Email Address</label><input type="email" placeholder="you@example.com" id="r-email"></div>
+    <div class="field-row">
+      <div class="field"><label>City</label><input type="text" placeholder="Addis Ababa" id="r-city"></div>
+      <div class="field"><label>English Level</label><select id="r-level"><option>Complete beginner</option><option>I know a little</option><option>I can read but not speak</option></select></div>
+    </div>
+    <div class="field"><label>Password (for student login)</label><input type="password" placeholder="Create a password" id="r-pass"></div>
+    
+    <button class="submit-btn" onclick="register()">Reserve my seat — 3,999 ETB</button>
+    
+    <div class="pay-info">
+      <h4>— Payment Instructions</h4>
+      <p>After submitting, send <strong style="color:var(--gold)">3,999 ETB</strong> to one of the accounts below, then forward your transaction screenshot to our Telegram. Your account unlocks within 24 hours.</p>
+      <div class="accounts">
+        <div><strong>CBE:</strong> Yasmin Mustefa · 1000XXXXXXXX</div>
+        <div><strong>Telebirr:</strong> 09XX XXX XXX</div>
+        <div><strong>Telegram:</strong> @AYLabsSupport</div>
+      </div>
+    </div>
+    
+    <div class="alt-row">Already enrolled? <a onclick="switchTab('login')">Login here →</a></div>
+  </div>
+
+  <div class="form-block" id="login-block">
+    <h1 class="form-title">Welcome <em>back.</em></h1>
+    <p class="form-sub">Login to continue your lessons. Your progress is saved.</p>
+    
+    <div class="field"><label>Email</label><input type="email" placeholder="you@example.com" id="l-email"></div>
+    <div class="field"><label>Password</label><input type="password" placeholder="Your password" id="l-pass"></div>
+    
+    <button class="submit-btn" onclick="login()">Login & continue learning →</button>
+    
+    <div class="alt-row">New here? <a onclick="switchTab('enroll')">Enroll now →</a></div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✓ Registered! Send payment to unlock.</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+  // 3D particles background
+  const canvas = document.getElementById('bg-canvas');
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  
+  const particleCount = 500;
+  const positions = new Float32Array(particleCount*3);
+  const colors = new Float32Array(particleCount*3);
+  for(let i=0;i<particleCount;i++){
+    positions[i*3]=(Math.random()-0.5)*60;
+    positions[i*3+1]=(Math.random()-0.5)*40;
+    positions[i*3+2]=(Math.random()-0.5)*40;
+    const c = Math.random();
+    if(c<0.6){colors[i*3]=1;colors[i*3+1]=0.34;colors[i*3+2]=0.2;}
+    else {colors[i*3]=1;colors[i*3+1]=0.71;colors[i*3+2]=0.15;}
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions,3));
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors,3));
+  const points = new THREE.Points(geometry, new THREE.PointsMaterial({size:0.15, vertexColors:true, transparent:true, opacity:0.85, blending:THREE.AdditiveBlending}));
+  scene.add(points);
+  camera.position.z = 12;
+  
+  let mx=0,my=0;
+  document.addEventListener('mousemove',(e)=>{mx=(e.clientX/window.innerWidth-0.5)*2;my=(e.clientY/window.innerHeight-0.5)*2;});
+  function animate(){
+    requestAnimationFrame(animate);
+    points.rotation.y += 0.0007;
+    points.rotation.x += 0.0003;
+    camera.position.x += (mx*1.5 - camera.position.x)*0.04;
+    camera.position.y += (-my*1 - camera.position.y)*0.04;
+    camera.lookAt(scene.position);
+    renderer.render(scene,camera);
+  }
+  animate();
+  window.addEventListener('resize',()=>{
+    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+  
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursor-ring');
+  document.addEventListener('mousemove',(e)=>{
+    cursor.style.left=e.clientX+'px';cursor.style.top=e.clientY+'px';
+    ring.style.left=e.clientX+'px';ring.style.top=e.clientY+'px';
+  });
+  document.querySelectorAll('a, button, input, select').forEach(el=>{
+    el.addEventListener('mouseenter',()=>cursor.classList.add('big'));
+    el.addEventListener('mouseleave',()=>cursor.classList.remove('big'));
+  });
+  
+  // Tabs / forms
+  function switchTab(name){
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.form-block').forEach(b=>b.classList.remove('active'));
+    if(name==='enroll'){
+      document.querySelectorAll('.tab')[0].classList.add('active');
+      document.getElementById('enroll-block').classList.add('active');
+    } else {
+      document.querySelectorAll('.tab')[1].classList.add('active');
+      document.getElementById('login-block').classList.add('active');
+    }
+  }
+  function register(){
+    const name = document.getElementById('r-name').value;
+    const email = document.getElementById('r-email').value;
+    if(!name || !email){alert('Please fill in your name and email.');return;}
+    showToast('✓ Registered! Send payment to unlock.');
+    setTimeout(()=>switchTab('login'), 1800);
+  }
+  function login(){
+    const email = document.getElementById('l-email').value;
+    const pass = document.getElementById('l-pass').value;
+    if(!email || !pass){alert('Please enter email and password.');return;}
+    showToast('✓ Login successful! Redirecting...');
+    setTimeout(()=>window.location='learn.html', 1200);
+  }
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 3000);
+  }
+</script>
+</body>
+</html>

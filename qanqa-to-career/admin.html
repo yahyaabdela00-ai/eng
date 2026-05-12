@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin · ቋንቋ to Career</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0a0f;
+    --bg-2:#13131c;
+    --ink:#fffaf0;
+    --rust:#ff5733;
+    --rust-bright:#ff7849;
+    --gold:#ffb627;
+    --cyan:#06d6a0;
+    --red:#ff3b30;
+    --muted:#8a8694;
+    --line:rgba(255,250,240,.08);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;cursor:none;overflow-x:hidden;}
+  
+  .cursor{position:fixed;width:12px;height:12px;background:var(--rust);border-radius:50%;pointer-events:none;z-index:9999;transition:width .25s,height .25s;mix-blend-mode:difference;transform:translate(-50%,-50%);}
+  .cursor.big{width:40px;height:40px;}
+  .cursor-ring{position:fixed;width:36px;height:36px;border:1px solid var(--gold);border-radius:50%;pointer-events:none;z-index:9998;transition:transform .3s cubic-bezier(.16,1,.3,1);transform:translate(-50%,-50%);}
+  
+  #bg-canvas{position:fixed;inset:0;z-index:0;opacity:.5;}
+  .noise{position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.04;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  
+  /* PASSWORD GATE */
+  .gate{
+    position:fixed;inset:0;z-index:200;
+    background:rgba(10,10,15,.95);
+    backdrop-filter:blur(20px);
+    display:flex;align-items:center;justify-content:center;
+    padding:24px;
+  }
+  .gate.hide{display:none;}
+  .gate-card{
+    max-width:460px;width:100%;
+    background:linear-gradient(145deg,rgba(255,255,255,.06) 0%,rgba(255,255,255,.02) 100%);
+    backdrop-filter:blur(20px);
+    border:1px solid var(--line);
+    border-radius:24px;
+    padding:48px 40px;
+    position:relative;
+    overflow:hidden;
+    box-shadow:0 40px 100px rgba(0,0,0,.6);
+    animation:gateEnter .8s cubic-bezier(.16,1,.3,1);
+  }
+  @keyframes gateEnter{from{opacity:0;transform:translateY(20px) scale(.96);}to{opacity:1;transform:translateY(0) scale(1);}}
+  .gate-card::before{
+    content:"";position:absolute;top:0;left:0;right:0;
+    height:3px;
+    background:linear-gradient(90deg,var(--rust),var(--gold));
+  }
+  .gate-icon{
+    width:60px;height:60px;
+    background:linear-gradient(135deg,var(--rust),var(--gold));
+    border-radius:18px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:28px;
+    margin-bottom:24px;
+    box-shadow:0 12px 40px rgba(255,87,51,.4);
+  }
+  .gate-eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--gold);margin-bottom:8px;
+  }
+  .gate-card h1{
+    font-family:'Fraunces',serif;font-weight:400;
+    font-size:36px;line-height:1;letter-spacing:-.025em;
+    margin-bottom:8px;
+  }
+  .gate-card h1 em{
+    font-style:italic;
+    background:linear-gradient(135deg,var(--rust),var(--gold));
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;
+  }
+  .gate-sub{color:var(--muted);font-size:14px;margin-bottom:32px;}
+  .gate-field{margin-bottom:18px;}
+  .gate-field label{
+    display:block;
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--gold);margin-bottom:8px;
+  }
+  .gate-field input{
+    width:100%;padding:14px 16px;
+    background:rgba(255,255,255,.03);
+    border:1px solid var(--line);
+    border-radius:12px;
+    color:var(--ink);font-size:14px;
+    font-family:'Inter',sans-serif;
+    transition:all .25s;cursor:none;
+  }
+  .gate-field input:focus{
+    outline:none;border-color:var(--rust);
+    background:rgba(255,87,51,.06);
+    box-shadow:0 0 0 4px rgba(255,87,51,.08);
+  }
+  .gate-btn{
+    width:100%;
+    background:linear-gradient(135deg,var(--rust) 0%,var(--rust-bright) 100%);
+    color:var(--ink);border:none;
+    padding:16px;border-radius:100px;
+    font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+    cursor:none;
+    font-family:'Inter',sans-serif;
+    margin-top:8px;
+    transition:all .35s;
+    box-shadow:0 10px 40px rgba(255,87,51,.35);
+  }
+  .gate-btn:hover{transform:translateY(-2px);box-shadow:0 14px 50px rgba(255,87,51,.5);}
+  .gate-error{
+    color:var(--red);
+    font-size:12px;
+    margin-top:12px;
+    text-align:center;
+    min-height:18px;
+    font-family:'JetBrains Mono',monospace;
+    letter-spacing:.05em;
+  }
+  
+  /* TOPBAR */
+  .topbar{
+    position:sticky;top:0;z-index:50;
+    background:rgba(10,10,15,.7);
+    backdrop-filter:blur(20px) saturate(180%);
+    -webkit-backdrop-filter:blur(20px) saturate(180%);
+    color:var(--ink);
+    padding:16px 32px;
+    display:flex;justify-content:space-between;align-items:center;
+    border-bottom:1px solid var(--line);
+  }
+  .tb-logo{
+    font-family:'Fraunces',serif;font-size:20px;font-weight:700;
+    background:linear-gradient(135deg,var(--ink) 0%,var(--gold) 100%);
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;
+  }
+  .tb-logo span{color:var(--rust);font-style:italic;-webkit-text-fill-color:var(--rust);}
+  .tb-tag{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--rust);
+    border:1px solid var(--rust);
+    padding:5px 12px;border-radius:100px;
+    background:rgba(255,87,51,.06);
+  }
+  .tb-right{font-size:13px;color:var(--muted);}
+  .tb-right strong{color:var(--ink);}
+  .tb-right a{color:var(--gold);text-decoration:none;cursor:none;}
+  
+  .container{max-width:1500px;margin:0 auto;padding:48px 32px;position:relative;z-index:5;}
+  
+  .page-head{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    margin-bottom:48px;
+    padding-bottom:24px;
+    border-bottom:1px solid var(--line);
+  }
+  .page-head h1{
+    font-family:'Fraunces',serif;
+    font-size:56px;font-weight:400;line-height:1;letter-spacing:-.03em;
+  }
+  .page-head h1 em{
+    font-style:italic;
+    background:linear-gradient(135deg,var(--rust),var(--gold));
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;
+  }
+  .page-head .meta{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);
+  }
+  .page-head .meta .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);margin-right:8px;vertical-align:middle;animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+  
+  /* STATS */
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:16px;
+    margin-bottom:48px;
+  }
+  .stat{
+    background:linear-gradient(145deg,rgba(255,255,255,.04) 0%,rgba(255,255,255,.01) 100%);
+    backdrop-filter:blur(10px);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:28px 24px;
+    position:relative;
+    overflow:hidden;
+    transition:transform .3s;
+  }
+  .stat:hover{transform:translateY(-4px);border-color:rgba(255,87,51,.3);}
+  .stat::before{
+    content:"";position:absolute;top:0;left:0;right:0;
+    height:2px;
+    background:linear-gradient(90deg,var(--rust),transparent);
+    opacity:.5;
+  }
+  .stat-label{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--gold);margin-bottom:12px;
+  }
+  .stat-num{
+    font-family:'Fraunces',serif;
+    font-size:52px;font-weight:500;line-height:1;letter-spacing:-.025em;
+    background:linear-gradient(135deg,var(--ink) 0%,var(--muted) 100%);
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;
+  }
+  .stat-num.rust{background:linear-gradient(135deg,var(--rust),var(--rust-bright));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  .stat-num.gold{background:linear-gradient(135deg,var(--gold),#ffd166);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  .stat-num.cyan{background:linear-gradient(135deg,var(--cyan),#34d399);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  .stat-foot{margin-top:10px;font-size:12px;color:var(--muted);}
+  
+  /* TABS */
+  .tabs{
+    display:flex;
+    background:rgba(255,255,255,.03);
+    backdrop-filter:blur(10px);
+    border:1px solid var(--line);
+    border-radius:100px;
+    padding:5px;
+    margin-bottom:24px;
+    width:fit-content;
+  }
+  .tab{
+    padding:10px 22px;
+    background:transparent;
+    cursor:none;
+    font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    border:none;border-radius:100px;
+    color:var(--muted);
+    transition:all .3s;
+    font-family:'Inter',sans-serif;
+  }
+  .tab.active{
+    background:linear-gradient(135deg,var(--rust),var(--rust-bright));
+    color:var(--ink);
+    box-shadow:0 4px 20px rgba(255,87,51,.35);
+  }
+  
+  /* TABLE */
+  .table-wrap{
+    background:linear-gradient(145deg,rgba(255,255,255,.03) 0%,rgba(255,255,255,.01) 100%);
+    backdrop-filter:blur(10px);
+    border:1px solid var(--line);
+    border-radius:20px;
+    overflow:hidden;
+  }
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  thead th{
+    background:rgba(255,255,255,.03);
+    text-align:left;padding:16px 20px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--gold);
+    border-bottom:1px solid var(--line);
+    white-space:nowrap;
+  }
+  tbody td{padding:18px 20px;border-bottom:1px solid var(--line);vertical-align:middle;}
+  tbody tr{transition:background .2s;}
+  tbody tr:hover{background:rgba(255,87,51,.04);}
+  tbody tr:last-child td{border-bottom:none;}
+  
+  .student-cell{display:flex;align-items:center;gap:12px;}
+  .student-avatar{
+    width:38px;height:38px;
+    background:linear-gradient(135deg,var(--rust),var(--gold));
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif;font-weight:700;font-size:14px;
+    color:var(--bg);
+    flex-shrink:0;
+    box-shadow:0 4px 12px rgba(255,87,51,.3);
+  }
+  .student-name{font-weight:600;color:var(--ink);}
+  .student-email{font-size:12px;color:var(--muted);margin-top:2px;}
+  
+  .badge{
+    display:inline-block;
+    padding:5px 12px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+    border:1px solid;border-radius:100px;
+  }
+  .badge.pending{color:var(--gold);border-color:var(--gold);background:rgba(255,182,39,.08);}
+  .badge.active{color:var(--cyan);border-color:var(--cyan);background:rgba(6,214,160,.08);}
+  .badge.rejected{color:var(--red);border-color:var(--red);background:rgba(255,59,48,.08);}
+  
+  .row-actions{display:flex;gap:8px;}
+  .btn-sm{
+    padding:8px 14px;
+    font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+    cursor:none;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.04);
+    color:var(--ink);
+    border-radius:100px;
+    font-family:'Inter',sans-serif;
+    transition:all .25s;
+  }
+  .btn-sm:hover{background:rgba(255,255,255,.08);}
+  .btn-sm.approve{background:linear-gradient(135deg,var(--cyan),#04b389);border-color:transparent;color:var(--bg);font-weight:700;}
+  .btn-sm.approve:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(6,214,160,.4);}
+  .btn-sm.reject{background:transparent;border-color:rgba(255,59,48,.4);color:var(--red);}
+  .btn-sm.reject:hover{background:var(--red);color:var(--ink);}
+  
+  .toast{
+    position:fixed;top:24px;right:24px;
+    background:linear-gradient(135deg,var(--cyan),#04b389);
+    color:var(--bg);
+    padding:14px 22px;
+    font-size:13px;font-weight:600;
+    border-radius:12px;
+    box-shadow:0 10px 40px rgba(6,214,160,.4);
+    z-index:1000;
+    transform:translateX(120%);
+    transition:transform .4s cubic-bezier(.16,1,.3,1);
+  }
+  .toast.show{transform:translateX(0);}
+  .toast.reject{background:linear-gradient(135deg,var(--red),#cc2a20);color:var(--ink);box-shadow:0 10px 40px rgba(255,59,48,.4);}
+  
+  @media(max-width:900px){
+    body{cursor:auto;}
+    .cursor,.cursor-ring{display:none;}
+    .stats{grid-template-columns:1fr 1fr;}
+    .page-head{flex-direction:column;align-items:flex-start;gap:14px;}
+    .container{padding:32px 16px;}
+    .page-head h1{font-size:36px;}
+    .stat-num{font-size:36px;}
+    .table-wrap{overflow-x:auto;}
+  }
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="noise"></div>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+
+<!-- PASSWORD GATE -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="gate-icon">🔒</div>
+    <div class="gate-eyebrow">— Admin Access Required</div>
+    <h1>Welcome <em>back.</em></h1>
+    <p class="gate-sub">Sign in to access the AY Labs admin panel.</p>
+    
+    <div class="gate-field">
+      <label>Email</label>
+      <input type="email" id="g-email" placeholder="admin@aylabs.et" autocomplete="off">
+    </div>
+    <div class="gate-field">
+      <label>Password</label>
+      <input type="password" id="g-pass" placeholder="••••••••••" autocomplete="off">
+    </div>
+    <button class="gate-btn" onclick="tryLogin()">Unlock Admin Panel →</button>
+    <div class="gate-error" id="g-err"></div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:14px;">
+    <div class="tb-logo">AY Labs<span>.</span></div>
+    <div class="tb-tag">Admin Panel</div>
+  </div>
+  <div class="tb-right">Logged in as <strong>Yahya Mohammed</strong> · <a href="index.html" onclick="logout()">Logout</a></div>
+</div>
+
+<div class="container">
+  <div class="page-head">
+    <h1>ቋንቋ to Career — <em>Admin</em></h1>
+    <div class="meta"><span class="dot"></span>Today · May 12, 2026 · Live</div>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-label">— Total Enrollments</div>
+      <div class="stat-num">47</div>
+      <div class="stat-foot">Since launch</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">— Pending Approval</div>
+      <div class="stat-num rust">5</div>
+      <div class="stat-foot">Needs your action</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">— Active Students</div>
+      <div class="stat-num cyan">38</div>
+      <div class="stat-foot">Currently learning</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">— Revenue (ETB)</div>
+      <div class="stat-num gold">151,962</div>
+      <div class="stat-foot">From 38 paid · 3,999 each</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab(this,'pending')">Pending (5)</button>
+    <button class="tab" onclick="switchTab(this,'active')">Active</button>
+    <button class="tab" onclick="switchTab(this,'all')">All</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Phone</th>
+          <th>City</th>
+          <th>Enrolled</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div class="student-cell">
+              <div class="student-avatar">M</div>
+              <div><div class="student-name">Meron Alemu</div><div class="student-email">meron.alemu@gmail.com</div></div>
+            </div>
+          </td>
+          <td>+251 911 234 567</td>
+          <td>Addis Ababa</td>
+          <td>May 12, 2026</td>
+          <td><span class="badge pending">Pending</span></td>
+          <td>
+            <div class="row-actions">
+              <button class="btn-sm approve" onclick="approve(this,'Meron Alemu')">✓ Approve</button>
+              <button class="btn-sm reject" onclick="reject(this,'Meron Alemu')">✕ Reject</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="student-cell">
+              <div class="student-avatar">A</div>
+              <div><div class="student-name">Abel Bekele</div><div class="student-email">abel.bekele@yahoo.com</div></div>
+            </div>
+          </td>
+          <td>+251 922 345 678</td>
+          <td>Adama</td>
+          <td>May 12, 2026</td>
+          <td><span class="badge pending">Pending</span></td>
+          <td>
+            <div class="row-actions">
+              <button class="btn-sm approve" onclick="approve(this,'Abel Bekele')">✓ Approve</button>
+              <button class="btn-sm reject" onclick="reject(this,'Abel Bekele')">✕ Reject</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="student-cell">
+              <div class="student-avatar">H</div>
+              <div><div class="student-name">Hanan Mohammed</div><div class="student-email">hanan.m@outlook.com</div></div>
+            </div>
+          </td>
+          <td>+251 933 456 789</td>
+          <td>Dire Dawa</td>
+          <td>May 11, 2026</td>
+          <td><span class="badge pending">Pending</span></td>
+          <td>
+            <div class="row-actions">
+              <button class="btn-sm approve" onclick="approve(this,'Hanan Mohammed')">✓ Approve</button>
+              <button class="btn-sm reject" onclick="reject(this,'Hanan Mohammed')">✕ Reject</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="student-cell">
+              <div class="student-avatar">D</div>
+              <div><div class="student-name">Dawit Tesfaye</div><div class="student-email">dawitt.dev@gmail.com</div></div>
+            </div>
+          </td>
+          <td>+251 944 567 890</td>
+          <td>Addis Ababa</td>
+          <td>May 11, 2026</td>
+          <td><span class="badge pending">Pending</span></td>
+          <td>
+            <div class="row-actions">
+              <button class="btn-sm approve" onclick="approve(this,'Dawit Tesfaye')">✓ Approve</button>
+              <button class="btn-sm reject" onclick="reject(this,'Dawit Tesfaye')">✕ Reject</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="student-cell">
+              <div class="student-avatar">S</div>
+              <div><div class="student-name">Saron Girma</div><div class="student-email">saron.girma@gmail.com</div></div>
+            </div>
+          </td>
+          <td>+251 955 678 901</td>
+          <td>Hawassa</td>
+          <td>May 10, 2026</td>
+          <td><span class="badge pending">Pending</span></td>
+          <td>
+            <div class="row-actions">
+              <button class="btn-sm approve" onclick="approve(this,'Saron Girma')">✓ Approve</button>
+              <button class="btn-sm reject" onclick="reject(this,'Saron Girma')">✕ Reject</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="toast" id="toast">✓ Student approved</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+  // ============ AUTH ============
+  const ADMIN_EMAIL = "aderooy7@gmail.com";
+  const ADMIN_PASS = "QVv58h123";
+  
+  function tryLogin(){
+    const e = document.getElementById('g-email').value.trim().toLowerCase();
+    const p = document.getElementById('g-pass').value;
+    const err = document.getElementById('g-err');
+    if(e === ADMIN_EMAIL.toLowerCase() && p === ADMIN_PASS){
+      sessionStorage.setItem('aylabs_admin','1');
+      document.getElementById('gate').classList.add('hide');
+      err.textContent = '';
+    } else {
+      err.textContent = '⚠ Invalid credentials. Try again.';
+      document.getElementById('g-pass').value = '';
+    }
+  }
+  function logout(){
+    sessionStorage.removeItem('aylabs_admin');
+  }
+  // Check session on load
+  if(sessionStorage.getItem('aylabs_admin')==='1'){
+    document.getElementById('gate').classList.add('hide');
+  }
+  // Submit on Enter
+  document.getElementById('g-pass').addEventListener('keydown',(e)=>{
+    if(e.key==='Enter') tryLogin();
+  });
+  document.getElementById('g-email').addEventListener('keydown',(e)=>{
+    if(e.key==='Enter') document.getElementById('g-pass').focus();
+  });
+  
+  // ============ 3D BACKGROUND ============
+  const canvas = document.getElementById('bg-canvas');
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  
+  const particleCount = 400;
+  const positions = new Float32Array(particleCount*3);
+  const colors = new Float32Array(particleCount*3);
+  for(let i=0;i<particleCount;i++){
+    positions[i*3]=(Math.random()-0.5)*60;
+    positions[i*3+1]=(Math.random()-0.5)*40;
+    positions[i*3+2]=(Math.random()-0.5)*40;
+    const c = Math.random();
+    if(c<0.5){colors[i*3]=1;colors[i*3+1]=0.34;colors[i*3+2]=0.2;}
+    else {colors[i*3]=1;colors[i*3+1]=0.71;colors[i*3+2]=0.15;}
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions,3));
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors,3));
+  const points = new THREE.Points(geometry, new THREE.PointsMaterial({size:0.13, vertexColors:true, transparent:true, opacity:0.8, blending:THREE.AdditiveBlending}));
+  scene.add(points);
+  camera.position.z = 12;
+  
+  let mx=0,my=0;
+  document.addEventListener('mousemove',(e)=>{mx=(e.clientX/window.innerWidth-0.5)*2;my=(e.clientY/window.innerHeight-0.5)*2;});
+  function animate(){
+    requestAnimationFrame(animate);
+    points.rotation.y += 0.0006;
+    points.rotation.x += 0.0002;
+    camera.position.x += (mx*1 - camera.position.x)*0.04;
+    camera.position.y += (-my*0.7 - camera.position.y)*0.04;
+    camera.lookAt(scene.position);
+    renderer.render(scene,camera);
+  }
+  animate();
+  window.addEventListener('resize',()=>{
+    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+  
+  // ============ CURSOR ============
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursor-ring');
+  document.addEventListener('mousemove',(e)=>{
+    cursor.style.left=e.clientX+'px';cursor.style.top=e.clientY+'px';
+    ring.style.left=e.clientX+'px';ring.style.top=e.clientY+'px';
+  });
+  function attachCursorEvents(){
+    document.querySelectorAll('a, button, input, select').forEach(el=>{
+      el.addEventListener('mouseenter',()=>cursor.classList.add('big'));
+      el.addEventListener('mouseleave',()=>cursor.classList.remove('big'));
+    });
+  }
+  attachCursorEvents();
+  
+  // ============ ADMIN ACTIONS ============
+  function switchTab(el, name){
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    el.classList.add('active');
+  }
+  function approve(btn, name){
+    const row = btn.closest('tr');
+    row.querySelector('.badge').className='badge active';
+    row.querySelector('.badge').textContent='Active';
+    btn.closest('.row-actions').innerHTML='<span style="font-size:11px;color:var(--muted);font-family:JetBrains Mono,monospace;letter-spacing:.06em;">— Approved · Unlocked</span>';
+    showToast('✓ ' + name + ' approved · Course unlocked', false);
+  }
+  function reject(btn, name){
+    const row = btn.closest('tr');
+    row.querySelector('.badge').className='badge rejected';
+    row.querySelector('.badge').textContent='Rejected';
+    btn.closest('.row-actions').innerHTML='<span style="font-size:11px;color:var(--muted);font-family:JetBrains Mono,monospace;letter-spacing:.06em;">— Rejected</span>';
+    showToast('✕ ' + name + ' rejected', true);
+  }
+  function showToast(msg, isReject){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (isReject ? ' reject' : '');
+    setTimeout(()=>t.classList.remove('show'), 2800);
+  }
+</script>
+</body>
+</html>

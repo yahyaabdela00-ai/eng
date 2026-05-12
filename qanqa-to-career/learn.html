@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learning Dashboard — ቋንቋ to Career</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1a1814;
+    --paper:#f4ede1;
+    --cream:#ebe1cf;
+    --rust:#b14a2f;
+    --gold:#c89b3c;
+    --olive:#5a6b3a;
+    --muted:#6b6357;
+    --line:#d6c9b0;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    font-family:'Inter',sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100vh;
+  }
+  .grain{
+    position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  
+  /* TOP BAR */
+  .topbar{
+    background:var(--ink);
+    color:var(--paper);
+    padding:14px 32px;
+    display:flex;justify-content:space-between;align-items:center;
+    border-bottom:2px solid var(--gold);
+    position:sticky;top:0;z-index:50;
+  }
+  .tb-logo{
+    font-family:'Fraunces',serif;
+    font-size:20px;font-weight:700;
+  }
+  .tb-logo span{color:var(--gold);font-style:italic;}
+  .tb-right{display:flex;gap:24px;align-items:center;font-size:13px;}
+  .tb-user{
+    display:flex;align-items:center;gap:10px;
+  }
+  .avatar{
+    width:34px;height:34px;
+    background:var(--rust);
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif;font-weight:700;font-size:14px;
+  }
+  .logout{color:rgba(255,255,255,.6);text-decoration:none;font-size:12px;letter-spacing:.1em;text-transform:uppercase;}
+  .logout:hover{color:var(--gold);}
+  
+  /* LAYOUT */
+  .layout{
+    display:grid;
+    grid-template-columns:340px 1fr;
+    min-height:calc(100vh - 60px);
+  }
+  
+  /* SIDEBAR */
+  .sidebar{
+    background:var(--cream);
+    border-right:1px solid var(--line);
+    padding:32px 28px;
+    overflow-y:auto;
+  }
+  .sb-header{margin-bottom:32px;}
+  .sb-eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--rust);margin-bottom:10px;
+  }
+  .sb-title{
+    font-family:'Fraunces',serif;
+    font-size:24px;font-weight:500;letter-spacing:-.01em;
+    line-height:1.1;margin-bottom:14px;
+  }
+  .progress-block{
+    margin-top:18px;
+    padding:16px;
+    background:var(--paper);
+    border:1px solid var(--ink);
+  }
+  .progress-num{
+    font-family:'Fraunces',serif;
+    font-size:32px;font-weight:600;
+    line-height:1;
+  }
+  .progress-num span{font-size:14px;color:var(--muted);font-weight:400;}
+  .progress-label{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);margin-top:4px;
+  }
+  .progress-bar{
+    height:6px;background:var(--line);margin-top:10px;
+    position:relative;overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;background:var(--rust);
+    width:8%;
+  }
+  
+  /* MODULE LIST */
+  .module-block{margin-bottom:24px;}
+  .module-head{
+    display:flex;justify-content:space-between;align-items:center;
+    cursor:pointer;
+    padding:14px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .module-head h4{
+    font-family:'Fraunces',serif;
+    font-weight:500;
+    font-size:16px;
+    line-height:1.2;
+  }
+  .module-head .mh-num{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:.12em;
+    color:var(--rust);
+    margin-bottom:4px;
+  }
+  .module-head .chevron{font-size:14px;color:var(--muted);transition:transform .3s;}
+  .module-block.open .chevron{transform:rotate(180deg);}
+  
+  .lesson-list{
+    display:none;
+    margin-top:8px;
+  }
+  .module-block.open .lesson-list{display:block;}
+  
+  .lesson{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:10px 12px;
+    margin:4px 0;
+    cursor:pointer;
+    font-size:13px;
+    color:var(--ink);
+    border-left:2px solid transparent;
+    transition:all .2s;
+  }
+  .lesson:hover{background:var(--paper);border-left-color:var(--rust);}
+  .lesson.active{background:var(--paper);border-left-color:var(--rust);font-weight:600;}
+  .lesson.locked{color:var(--muted);cursor:not-allowed;opacity:.55;}
+  .lesson.locked:hover{background:transparent;border-left-color:transparent;}
+  .lesson .l-tag{
+    font-family:'JetBrains Mono',monospace;
+    font-size:9px;letter-spacing:.1em;
+    color:var(--gold);
+  }
+  
+  /* MAIN VIDEO AREA */
+  .main{padding:48px 56px;overflow-y:auto;}
+  .breadcrumb{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:24px;
+  }
+  .breadcrumb span{color:var(--rust);}
+  
+  .lesson-title{
+    font-family:'Fraunces',serif;
+    font-size:48px;font-weight:400;line-height:1;
+    letter-spacing:-.025em;
+    margin-bottom:14px;
+  }
+  .lesson-title em{font-style:italic;color:var(--rust);}
+  .lesson-sub{
+    color:var(--muted);
+    font-size:16px;
+    margin-bottom:36px;
+    max-width:720px;
+  }
+  
+  .video-wrap{
+    position:relative;
+    aspect-ratio:16/9;
+    background:var(--ink);
+    border:1px solid var(--ink);
+    box-shadow:14px 14px 0 -2px var(--ink);
+    overflow:hidden;
+    margin-bottom:48px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .video-wrap::before{
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(ellipse at center,transparent 0%,rgba(0,0,0,.4) 100%);
+  }
+  .play-btn{
+    position:relative;z-index:2;
+    width:88px;height:88px;
+    background:var(--gold);
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    transition:transform .25s;
+    border:none;
+  }
+  .play-btn:hover{transform:scale(1.08);}
+  .play-btn::before{
+    content:"";
+    width:0;height:0;
+    border-left:20px solid var(--ink);
+    border-top:13px solid transparent;
+    border-bottom:13px solid transparent;
+    margin-left:5px;
+  }
+  .video-meta{
+    position:absolute;
+    bottom:24px;left:24px;
+    color:var(--paper);
+    z-index:2;
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+  }
+  .video-meta .dot{color:var(--gold);margin:0 8px;}
+  
+  /* LESSON CONTENT */
+  .lesson-body{
+    max-width:780px;
+    display:grid;grid-template-columns:2fr 1fr;gap:48px;
+  }
+  .lesson-main h3{
+    font-family:'Fraunces',serif;
+    font-size:24px;font-weight:500;
+    margin-bottom:16px;
+    margin-top:32px;
+  }
+  .lesson-main h3:first-child{margin-top:0;}
+  .lesson-main p{
+    color:var(--ink);
+    font-size:16px;line-height:1.7;
+    margin-bottom:14px;
+  }
+  .key-phrase{
+    background:var(--cream);
+    border-left:3px solid var(--rust);
+    padding:14px 18px;
+    margin:14px 0;
+    font-family:'Fraunces',serif;
+    font-style:italic;
+    font-size:18px;
+  }
+  .key-phrase span{
+    display:block;
+    font-family:'Inter',sans-serif;
+    font-style:normal;
+    font-size:13px;
+    color:var(--muted);
+    margin-top:4px;
+  }
+  
+  .lesson-side{
+    background:var(--cream);
+    border:1px solid var(--ink);
+    padding:24px;
+    height:fit-content;
+    position:sticky;top:80px;
+  }
+  .ls-eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--rust);margin-bottom:12px;
+  }
+  .ls-list{
+    list-style:none;
+  }
+  .ls-list li{
+    padding:10px 0;
+    border-bottom:1px dashed var(--line);
+    font-size:13px;
+    display:flex;justify-content:space-between;
+  }
+  .ls-list li:last-child{border-bottom:none;}
+  .ls-list li span:last-child{
+    font-family:'JetBrains Mono',monospace;
+    color:var(--muted);
+    font-size:11px;
+  }
+  
+  .next-btn{
+    display:inline-flex;align-items:center;gap:10px;
+    background:var(--ink);color:var(--paper);
+    padding:16px 28px;
+    text-decoration:none;
+    font-size:13px;font-weight:600;
+    letter-spacing:.08em;text-transform:uppercase;
+    margin-top:32px;border:1px solid var(--ink);
+    cursor:pointer;
+  }
+  .next-btn:hover{background:var(--rust);border-color:var(--rust);}
+  
+  @media(max-width:1000px){
+    .layout{grid-template-columns:1fr;}
+    .sidebar{display:none;}
+    .main{padding:32px 24px;}
+    .lesson-title{font-size:32px;}
+    .lesson-body{grid-template-columns:1fr;gap:24px;}
+    .video-wrap{box-shadow:8px 8px 0 -2px var(--ink);}
+  }
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="tb-logo">AY Labs<span>.</span></div>
+  <div class="tb-right">
+    <div class="tb-user">
+      <div class="avatar">Y</div>
+      <div>
+        <div style="font-size:13px;font-weight:600;">Yohannes T.</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.5);">Beginner · M1</div>
+      </div>
+    </div>
+    <a href="index.html" class="logout">Logout</a>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-header">
+      <div class="sb-eyebrow">— Your Course</div>
+      <h3 class="sb-title">ቋንቋ to Career<br>Beginner English</h3>
+      <div class="progress-block">
+        <div class="progress-num">3<span>/36 lessons</span></div>
+        <div class="progress-label">Course progress</div>
+        <div class="progress-bar"><div class="progress-fill"></div></div>
+      </div>
+    </div>
+    
+    <!-- MODULE 1 -->
+    <div class="module-block open">
+      <div class="module-head" onclick="toggleModule(this)">
+        <div>
+          <div class="mh-num">M / 01 — 5 lessons</div>
+          <h4>The Alphabet & First Words</h4>
+        </div>
+        <div class="chevron">▼</div>
+      </div>
+      <div class="lesson-list">
+        <div class="lesson" onclick="selectLesson(this,'1.1')"><span>1.1 · The English Alphabet</span><span class="l-tag">DONE ✓</span></div>
+        <div class="lesson active" onclick="selectLesson(this,'1.2')"><span>1.2 · Vowels & Consonants</span><span class="l-tag">NOW</span></div>
+        <div class="lesson" onclick="selectLesson(this,'1.3')"><span>1.3 · Numbers 1–100</span></div>
+        <div class="lesson" onclick="selectLesson(this,'1.4')"><span>1.4 · Days, Months, Time</span></div>
+        <div class="lesson" onclick="selectLesson(this,'1.5')"><span>1.5 · Common Objects</span></div>
+      </div>
+    </div>
+    
+    <!-- MODULE 2 -->
+    <div class="module-block">
+      <div class="module-head" onclick="toggleModule(this)">
+        <div>
+          <div class="mh-num">M / 02 — 6 lessons</div>
+          <h4>Greetings & Introductions</h4>
+        </div>
+        <div class="chevron">▼</div>
+      </div>
+      <div class="lesson-list">
+        <div class="lesson locked"><span>2.1 · Hello, my name is...</span><span class="l-tag">🔒</span></div>
+        <div class="lesson locked"><span>2.2 · Asking how someone is</span><span class="l-tag">🔒</span></div>
+        <div class="lesson locked"><span>2.3 · Where are you from?</span><span class="l-tag">🔒</span></div>
+        <div class="lesson locked"><span>2.4 · Family vocabulary</span><span class="l-tag">🔒</span></div>
+        <div class="lesson locked"><span>2.5 · Polite phrases</span><span class="l-tag">🔒</span></div>
+        <div class="lesson locked"><span>2.6 · Saying goodbye</span><span class="l-tag">🔒</span></div>
+      </div>
+    </div>
+    
+    <!-- MODULE 3 -->
+    <div class="module-block">
+      <div class="module-head" onclick="toggleModule(this)">
+        <div>
+          <div class="mh-num">M / 03 — 7 lessons</div>
+          <h4>Sentences & Conversation</h4>
+        </div>
+        <div class="chevron">▼</div>
+      </div>
+      <div class="lesson-list">
+        <div class="lesson locked"><span>3.1 · Subject + Verb + Object</span><span class="l-tag">🔒</span></div>
+        <div class="lesson locked"><span>3.2 · Asking questions</span><span class="l-tag">🔒</span></div>
+        <div class="lesson locked"><span>3.3 · Yes/no answers</span><span class="l-tag">🔒</span></div>
+        <div class="lesson locked"><span>3.4 · At the market</span><span class="l-tag">🔒</span></div>
+        <div class="lesson locked"><span>3.5 · At a café</span><span class="l-tag">🔒</span></div>
+        <div class="lesson locked"><span>3.6 · Giving directions</span><span class="l-tag">🔒</span></div>
+        <div class="lesson locked"><span>3.7 · Conversation practice</span><span class="l-tag">🔒</span></div>
+      </div>
+    </div>
+    
+    <!-- MODULE 4 -->
+    <div class="module-block">
+      <div class="module-head" onclick="toggleModule(this)">
+        <div>
+          <div class="mh-num">M / 04 — 8 lessons</div>
+          <h4>Reading, Writing & Grammar</h4>
+        </div>
+        <div class="chevron">▼</div>
+      </div>
+      <div class="lesson-list">
+        <div class="lesson locked"><span>4.1 · Articles (a, an, the)</span><span class="l-tag">🔒</span></div>
+        <div class="lesson locked"><span>4.2 · Present tense</span><span class="l-tag">🔒</span></div>
+        <div class="lesson locked"><span>4.3 · Past tense</span><span class="l-tag">🔒</span></div>
+        <div class="lesson locked"><span>4.4 · Future tense</span><span class="l-tag">🔒</span></div>
+        <div class="lesson locked"><span>4.5 · Reading short stories</span><span class="l-tag">🔒</span></div>
+        <div class="lesson locked"><span>4.6 · Writing emails</span><span class="l-tag">🔒</span></div>
+        <div class="lesson locked"><span>4.7 · Writing your CV</span><span class="l-tag">🔒</span></div>
+        <div class="lesson locked"><span>4.8 · Reading comprehension</span><span class="l-tag">🔒</span></div>
+      </div>
+    </div>
+    
+    <!-- MODULE 5 -->
+    <div class="module-block">
+      <div class="module-head" onclick="toggleModule(this)">
+        <div>
+          <div class="mh-num">M / 05 — 6 lessons</div>
+          <h4>English for Work</h4>
+        </div>
+        <div class="chevron">▼</div>
+      </div>
+      <div class="lesson-list">
+        <div class="lesson locked"><span>5.1 · Job interview phrases</span><span class="l-tag">🔒</span></div>
+        <div class="lesson locked"><span>5.2 · Talking about experience</span><span class="l-tag">🔒</span></div>
+        <div class="lesson locked"><span>5.3 · Office vocabulary</span><span class="l-tag">🔒</span></div>
+        <div class="lesson locked"><span>5.4 · Customer service English</span><span class="l-tag">🔒</span></div>
+        <div class="lesson locked"><span>5.5 · Phone & email at work</span><span class="l-tag">🔒</span></div>
+        <div class="lesson locked"><span>5.6 · Mock interview</span><span class="l-tag">🔒</span></div>
+      </div>
+    </div>
+    
+    <!-- MODULE 6 -->
+    <div class="module-block">
+      <div class="module-head" onclick="toggleModule(this)">
+        <div>
+          <div class="mh-num">M / 06 — 4 lessons</div>
+          <h4>Practice & Certificate</h4>
+        </div>
+        <div class="chevron">▼</div>
+      </div>
+      <div class="lesson-list">
+        <div class="lesson locked"><span>6.1 · Real conversation drills</span><span class="l-tag">🔒</span></div>
+        <div class="lesson locked"><span>6.2 · Listening practice</span><span class="l-tag">🔒</span></div>
+        <div class="lesson locked"><span>6.3 · Final assessment</span><span class="l-tag">🔒</span></div>
+        <div class="lesson locked"><span>6.4 · Receive your certificate</span><span class="l-tag">🔒</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="breadcrumb">Module 01 <span>·</span> Lesson 1.2</div>
+    <h1 class="lesson-title">Vowels & <em>Consonants</em></h1>
+    <p class="lesson-sub">Learn the 5 vowel sounds and how they shape English words. Practice with common everyday examples.</p>
+    
+    <div class="video-wrap">
+      <button class="play-btn" onclick="alert('Demo: video will play here once you upload lesson content.')"></button>
+      <div class="video-meta">Lesson 1.2 <span class="dot">●</span> 14:32 <span class="dot">●</span> HD</div>
+    </div>
+    
+    <div class="lesson-body">
+      <div class="lesson-main">
+        <h3>What you'll learn in this lesson</h3>
+        <p>In English, the alphabet has 26 letters. Five of them are <strong>vowels</strong> (A, E, I, O, U) and the rest are <strong>consonants</strong>. Understanding the difference is the foundation of pronunciation.</p>
+        
+        <div class="key-phrase">
+          "Every English word needs at least one vowel."
+          <span>Today's key idea</span>
+        </div>
+        
+        <h3>Practice phrases</h3>
+        <p><strong>Apple</strong> · <strong>Egg</strong> · <strong>Ice</strong> · <strong>Orange</strong> · <strong>Umbrella</strong> — five everyday words, one for each vowel. Repeat them after the instructor in the video.</p>
+        
+        <h3>Why this matters</h3>
+        <p>Once you understand vowel and consonant sounds, you can read almost any new word in English — even ones you've never seen before. This is the gateway lesson to the rest of the course.</p>
+        
+        <button class="next-btn" onclick="markComplete()">Mark complete & continue →</button>
+      </div>
+      
+      <aside class="lesson-side">
+        <div class="ls-eyebrow">— Lesson Info</div>
+        <ul class="ls-list">
+          <li><span>Duration</span><span>14:32</span></li>
+          <li><span>Difficulty</span><span>EASY</span></li>
+          <li><span>Module</span><span>M / 01</span></li>
+          <li><span>Resources</span><span>2 PDFs</span></li>
+          <li><span>Quiz</span><span>5 QUESTIONS</span></li>
+        </ul>
+      </aside>
+    </div>
+  </main>
+</div>
+
+<script>
+  function toggleModule(el){
+    el.parentElement.classList.toggle('open');
+  }
+  function selectLesson(el, id){
+    if(el.classList.contains('locked')) return;
+    document.querySelectorAll('.lesson').forEach(l=>l.classList.remove('active'));
+    el.classList.add('active');
+  }
+  function markComplete(){
+    alert('Lesson complete! Next lesson will unlock in the full version.');
+  }
+</script>
+</body>
+</html>
